@@ -4,7 +4,7 @@ ARG GH_RUNNER_VERSION
 
 # TODO: Use regular user and not root
 ENV RUNNER_ALLOW_RUNASROOT=1
-ENV GH_RUNNER_VERSION=${GH_RUNNER_VERSION:-2.315.0}
+ENV GH_RUNNER_VERSION=${GH_RUNNER_VERSION:-2.320.0}
 
 WORKDIR /actions-runner
 
@@ -23,6 +23,14 @@ RUN apt-get update \
     && tar xzf ./actions-runner-linux-x64-${GH_RUNNER_VERSION}.tar.gz \
     && bash ./bin/installdependencies.sh \
     && rm ./actions-runner-linux-x64-${GH_RUNNER_VERSION}.tar.gz \
+    && apt-get autoremove -y \
+    && apt-get autoclean -y \ 
+    && rm -rf /var/lib/apt/lists
+
+RUN wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com jammy main" | tee /etc/apt/sources.list.d/hashicorp.list \
+    && apt-get update \
+    && apt-get -qq -y install --no-install-recommends terraform \
     && apt-get autoremove -y \
     && apt-get autoclean -y \ 
     && rm -rf /var/lib/apt/lists
