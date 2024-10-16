@@ -45,8 +45,19 @@ resource "aws_iam_role" "ecs_task_exec" {
   managed_policy_arns = [data.aws_iam_policy.ecs_exec_managed_policy.arn]
 }
 
+data "aws_iam_policy" "ecs_task_policy" {
+  name = "AdministratorAccess"
+}
+
+resource "aws_iam_role" "ecs_task_role" {
+  name                = var.ecs_task_role_name
+  assume_role_policy  = data.aws_iam_policy_document.ecs_assume_role_policy.json
+  managed_policy_arns = [data.aws_iam_policy.ecs_task_policy.arn]
+}
+
 resource "aws_ecs_task_definition" "this" {
   family                   = var.task_family_name
+  task_role_arn            = aws_iam_role.ecs_task_role.arn
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu                      = "512"
@@ -129,6 +140,11 @@ resource "aws_iam_policy" "lambda_permissions" {
         Action   = ["iam:PassRole"]
         Effect   = "Allow"
         Resource = aws_iam_role.ecs_task_exec.arn
+      },
+      {
+        Action   = ["iam:PassRole"]
+        Effect   = "Allow"
+        Resource = aws_iam_role.ecs_task_role.arn
       }
     ]
   })

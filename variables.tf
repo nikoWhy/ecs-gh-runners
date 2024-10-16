@@ -27,6 +27,11 @@ variable "ecs_task_execution_role_name" {
   type        = string
 }
 
+variable "ecs_task_role_name" {
+  description = "ECS task role name"
+  type        = string
+}
+
 variable "ecs_container_name" {
   description = "The name of the container"
   type        = string
