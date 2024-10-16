@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  terraform:
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v3
@@ -23,8 +23,17 @@ jobs:
           terraform validate
 
       - name: Terraform Plan
+        if: github.event_name == 'pull_request'
         env:
           TF_VAR_subnets: ${{ secrets.SUBNET_ID }}
         run: |
           terraform init -backend-config="bucket=${{ secrets.BUCKET_NAME }}"
           terraform plan
+
+      - name: Terraform Apply
+        if: github.event_name == 'push'
+        env:
+          TF_VAR_subnets: ${{ secrets.SUBNET_ID }}
+        run: |
+          terraform init -backend-config="bucket=${{ secrets.BUCKET_NAME }}"
+          terraform apply -auto-approve
